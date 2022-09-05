@@ -4,41 +4,42 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.swing.JTextArea;
+import java.awt.BorderLayout;
+import javax.swing.UIManager;
+import javax.swing.border.TitledBorder;
 
 import org.apache.log4j.BasicConfigurator;
 
 import data.Person;
 import helper.XMLConvert;
 
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JLabel;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Scanner;
-import java.awt.event.ActionEvent;
-import java.awt.Font;
 
-public class GUISender extends JFrame implements ActionListener {
+public class GUISender extends JFrame implements ActionListener{
+
+	private JPanel contentPane;
 	private JTextField textField;
 	private JTextArea textArea;
+	private Session session;
 
 	/**
 	 * Launch the application.
@@ -63,31 +64,50 @@ public class GUISender extends JFrame implements ActionListener {
 		setResizable(false);
 		setAlwaysOnTop(true);
 		getContentPane().setLayout(null);
-		setSize(650,550);
+		setTitle("Sender");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 500, 400);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setToolTipText("");
+		panel.setBorder(new TitledBorder(null, "Nội dung", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(6, 6, 488, 360);
+		contentPane.add(panel);
+		panel.setLayout(null);
+		
 		textArea = new JTextArea();
+		textArea.setBounds(6, 18, 476, 270);
 		textArea.setEditable(false);
-		textArea.setBounds(20, 41, 589, 386);
-		getContentPane().add(textArea);
+		panel.add(textArea);
 		
 		textField = new JTextField();
-		textField.setBounds(20, 437, 500, 39);
-		getContentPane().add(textField);
+		textField.setBounds(80, 290, 280, 65);
+		panel.add(textField);
 		textField.setColumns(10);
 		
+		JLabel lblNewLabel = new JLabel("Enter Text:");
+		lblNewLabel.setBounds(6, 312, 68, 16);
+		panel.add(lblNewLabel);
+		
 		JButton btnNewButton = new JButton("Send");
-		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnNewButton.setBounds(365, 303, 117, 40);
+		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		btnNewButton.setBounds(524, 437, 85, 39);
-		getContentPane().add(btnNewButton);
+		panel.add(btnNewButton);
 		
 		btnNewButton.addActionListener(this);
 		textField.addActionListener(this);
 	}
-
-	public void seed() throws Exception {
+	
+	public void send() throws Exception {
 		BasicConfigurator.configure();
 		//config environment for JNDI
 		Properties settings = new Properties();
@@ -111,14 +131,15 @@ public class GUISender extends JFrame implements ActionListener {
 		Message msg = session.createTextMessage("hello mesage from ActiveMQ");
 		producer.send(msg);
 		try {
-				String name = textField.getText();
-				Person p = new Person(1001,name, new Date());
-				String xml = new XMLConvert<Person>(p).object2XML(p);
-				msg = session.createTextMessage(xml);
-				producer.send(msg);
-				textField.setText("");
-				textArea.setText(textArea.getText() + "\n" + name);
-				System.out.println(name);
+			String name = textField.getText();
+			Person p = new Person(1001,name, new Date());
+			String xml = new XMLConvert<Person>(p).object2XML(p);
+			String txt = textField.getText().trim();
+			msg = session.createTextMessage(txt);
+			producer.send(msg);
+			textField.setText("");
+			textArea.setText(textArea.getText() + "\n" + name);
+			System.out.println(name);
 
 		} finally {
 			session.close();
@@ -126,11 +147,11 @@ public class GUISender extends JFrame implements ActionListener {
 			System.out.println("Finished...");
 		}
 	}
-
+	
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		try {
-			seed();
+			send();
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

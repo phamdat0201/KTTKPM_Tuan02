@@ -19,18 +19,18 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import org.apache.log4j.BasicConfigurator;
 
-import data.Person;
-import helper.XMLConvert;
+public class GUIReceiver extends JFrame implements ActionListener{
 
-public class GUIReceiver extends JFrame implements ActionListener {
-	/**
-	 * 
-	 */
+	private JPanel contentPane;
 	private static final long serialVersionUID = 1L;
 	private JTextField textField;
 	private JTextArea textArea;
@@ -58,37 +58,52 @@ public class GUIReceiver extends JFrame implements ActionListener {
 		setResizable(false);
 		setAlwaysOnTop(true);
 		getContentPane().setLayout(null);
-		setSize(650, 550);
-		setTitle("Nhan");
+		setTitle("Receiver");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 500, 400);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setToolTipText("");
+		panel.setBorder(new TitledBorder(null, "Nội dung", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(6, 6, 488, 360);
+		contentPane.add(panel);
+		panel.setLayout(null);
+		
 		textArea = new JTextArea();
+		textArea.setBounds(6, 18, 476, 270);
 		textArea.setEditable(false);
-		textArea.setBounds(20, 41, 589, 386);
-		getContentPane().add(textArea);
-
+		panel.add(textArea);
+		
 		textField = new JTextField();
-		textField.setBounds(20, 437, 500, 39);
-		getContentPane().add(textField);
+		textField.setBounds(80, 290, 280, 65);
+		panel.add(textField);
 		textField.setColumns(10);
-
+		
+		JLabel lblNewLabel = new JLabel("Enter Text:");
+		lblNewLabel.setBounds(6, 312, 68, 16);
+		panel.add(lblNewLabel);
+		
 		JButton btnNewButton = new JButton("Send");
-		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnNewButton.setBounds(365, 303, 117, 40);
+		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		btnNewButton.setBounds(524, 437, 85, 39);
-		getContentPane().add(btnNewButton);
-
+		panel.add(btnNewButton);
+		
 		btnNewButton.addActionListener(this);
 		try {
 			receiver();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-
 	}
-
 	public void receiver() throws Exception {
 		BasicConfigurator.configure();
 		// thiết lập môi trường cho JJNDI
@@ -122,23 +137,7 @@ public class GUIReceiver extends JFrame implements ActionListener {
 					if (msg instanceof TextMessage) {
 						TextMessage tm = (TextMessage) msg;
 						String txt = tm.getText();
-						System.out.println("Nhận được " + txt);
-
-						int indexStart = txt.indexOf("<hoten>");
-						int indexEnd = txt.indexOf("</hoten>");
-						int indexMSStart = txt.indexOf("<mssv>");
-						int indexMSEnd = txt.indexOf("</mssv>");
-						System.out.println("index " + indexStart);
-							System.out.println(txt);
-							String textMS = txt.substring(indexMSStart, indexMSEnd);
-							String text = txt.substring(indexStart + 7, indexEnd);
-							text.replaceAll("<hoten>", "");
-							textMS.replaceAll("<mssv>", "");
-							if(textArea.getText().indexOf(textMS) == -1) {
-								textArea.append("\nMSSV: " + textMS);
-							}
-							textArea.append("\nContent: " + text);
-						
+						textArea.append("\nContent: " + txt);
 						msg.acknowledge();// gửi tín hiệu ack
 					} else if (msg instanceof ObjectMessage) {
 						ObjectMessage om = (ObjectMessage) msg;
@@ -154,6 +153,6 @@ public class GUIReceiver extends JFrame implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-
+		
 	}
 }
